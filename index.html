@@ -3,145 +3,191 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0a0e0f">
+<meta name="theme-color" content="#f4f6f8">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Landslide">
-<title>YAKSHA Landslide Monitor</title>
+<title>Landslide Monitor</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-  :root{
-    --bg:#0a0e0f; --panel:#12181a; --panel2:#0e1416;
-    --line:#233034; --green:#00ff9d; --amber:#ffb000; --red:#ff3b3b;
-    --blue:#3aa8ff; --dim:#5a6a6d; --text:#d7e6e4;
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: #f4f6f8;
+    color: #222;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
   }
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-  html,body{height:100%;}
-  body{
-    font-family:'SF Mono','Courier New',monospace;
-    background:var(--bg); color:var(--text);
-    padding:14px 14px calc(30px + env(safe-area-inset-bottom));
-    max-width:640px; margin:0 auto;
-    -webkit-font-smoothing:antialiased;
+  h1 { font-size: 22px; text-align: center; margin-bottom: 4px; color: #333; }
+  .subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 20px; }
+  .status-card {
+    border-radius: 16px;
+    padding: 30px 20px;
+    text-align: center;
+    color: white;
+    margin-bottom: 16px;
+    transition: background 0.5s ease;
   }
-  h1{font-size:15px; letter-spacing:2px; text-transform:uppercase; color:var(--green); text-align:center;}
-  .subtitle{text-align:center; color:var(--dim); font-size:10px; letter-spacing:1px; margin-bottom:14px; text-transform:uppercase;}
-
-  .panel{
-    position:relative; background:var(--panel); border:1px solid var(--line);
-    border-radius:4px; padding:16px; margin-bottom:12px;
+  .status-level { font-size: 40px; font-weight: 800; letter-spacing: 1px; }
+  .status-message { font-size: 16px; margin-top: 10px; opacity: 0.95; }
+  .link-banner {
+    text-align: center;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    font-weight: 600;
   }
-  .panel::before,.panel::after,.panel .cbl,.panel .cbr{content:'';position:absolute;width:10px;height:10px;border-color:var(--green);}
-  .corner-brackets::before{content:'';position:absolute;top:-1px;left:-1px;width:10px;height:10px;border-top:2px solid var(--green);border-left:2px solid var(--green);}
-  .corner-brackets::after{content:'';position:absolute;top:-1px;right:-1px;width:10px;height:10px;border-top:2px solid var(--green);border-right:2px solid var(--green);}
-  .corner-brackets .cbl{bottom:-1px;left:-1px;border-bottom:2px solid var(--green);border-left:2px solid var(--green);}
-  .corner-brackets .cbr{bottom:-1px;right:-1px;border-bottom:2px solid var(--green);border-right:2px solid var(--green);}
+  .link-up { background: #e8f8f0; color: #1e8449; }
+  .link-down { background: #fdecea; color: #c0392b; }
+  .alert-strip { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+  .alert-chip { display:none; padding:12px 14px; border-radius:10px; font-size:14px; font-weight:600; align-items:center; gap:8px; }
+  .alert-chip.show { display:flex; }
+  @keyframes pulseAlert { 0%{opacity:1;} 50%{opacity:0.55;} 100%{opacity:1;} }
+  .chip-vib { background:#fff2e0; color:#a5610a; animation: pulseAlert 1.3s infinite; }
+  .chip-full { background:#fdecea; color:#c0392b; border:2px solid #c0392b; animation: pulseAlert 1s infinite; }
+  .chip-landslide { background:#c0392b; color:white; font-weight:800; border:3px solid #7b241c; animation: pulseAlert 0.6s infinite; }
+  .chip-gps { background:#fdf2e3; color:#a5610a; }
+  .chip-rain { background:#e8f2fd; color:#1a5fa8; }
+  .chip-siren { background:#2c3e50; color:white; animation: pulseAlert 0.8s infinite; }
+  .mini-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .mini-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .mini-value { font-size: 26px; font-weight: 700; color: #333; }
+  .mini-label { font-size: 12px; color: #888; margin-top: 4px; }
+  #map { width:100%; height:220px; border-radius:12px; margin-bottom:20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .map-note { text-align:center; font-size:12px; color:#888; margin:-12px 0 20px; }
+  button {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: #34495e;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+  button:active { background: #2c3e50; }
+  #adminPanel { display: none; }
+  .admin-table {
+    width: 100%;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+  }
+  .admin-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+  }
+  .admin-table td:first-child { color: #888; }
+  .admin-table td:last-child { text-align: right; font-weight: 600; color: #222; }
+  .admin-table tr:last-child td { border-bottom: none; }
+  .section-title { font-size: 13px; font-weight: 700; color: #555; margin: 16px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .footer { text-align: center; font-size: 11px; color: #aaa; margin-top: 10px; }
+  #eventLogList { background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom: 20px; overflow: hidden; }
+  .event-row { display: flex; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid #eee; font-size: 13px; }
+  .event-row:last-child { border-bottom: none; }
+  #resetWifiBtn { background:#c0392b; }
+  #resetWifiBtn:active { background:#96281b; }
+  .horizon-wrap { display:flex; align-items:center; gap:16px; background:white; border-radius:12px; padding:16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom:12px; }
+  #horizonSvg { border-radius:50%; flex-shrink:0; }
+  .horizon-labels { display:flex; flex-direction:column; gap:12px; text-align:center; flex:1; }
 
-  .link-banner{text-align:center;padding:7px;border-radius:4px;font-size:11px;margin-bottom:12px;font-weight:600;letter-spacing:1px;border:1px solid var(--line);text-transform:uppercase;}
-  .link-up{background:#062018;color:var(--green);border-color:#0a3a28;}
-  .link-down{background:#2a0d0d;color:var(--red);border-color:#4a1414;}
-
-  .status-card{border-radius:4px;padding:26px 18px;text-align:center;margin-bottom:12px;transition:background .5s,border-color .5s;border:1px solid var(--line);}
-  .status-level{font-size:34px;font-weight:800;letter-spacing:3px;}
-  .status-message{font-size:13px;margin-top:8px;opacity:.9;letter-spacing:.3px;}
-
-  .alert-strip{display:flex;flex-direction:column;gap:7px;margin-bottom:12px;}
-  .alert-chip{display:none;padding:11px 13px;border-radius:4px;font-size:12.5px;font-weight:600;align-items:center;gap:8px;border:1px solid;letter-spacing:.3px;}
-  .alert-chip.show{display:flex;}
-  @keyframes pulseAlert{0%{opacity:1;}50%{opacity:.5;}100%{opacity:1;}}
-  .chip-vib{background:#241a06;color:var(--amber);border-color:#4a3a10;animation:pulseAlert 1.3s infinite;}
-  .chip-full{background:#2a0d0d;color:var(--red);border-color:var(--red);animation:pulseAlert 1s infinite;}
-  .chip-landslide{background:var(--red);color:#1a0000;font-weight:800;border:2px solid #ffb3b3;animation:pulseAlert .6s infinite;}
-  .chip-gps{background:#241a06;color:var(--amber);border-color:#4a3a10;}
-  .chip-rain{background:#06202a;color:var(--blue);border-color:#0f3a4a;}
-  .chip-siren{background:#050708;color:var(--text);border-color:var(--line);animation:pulseAlert .8s infinite;}
-
-  .mini-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px;}
-  .mini-card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px 6px;text-align:center;}
-  .mini-value{font-size:22px;font-weight:700;color:var(--green);}
-  .mini-label{font-size:9.5px;color:var(--dim);margin-top:4px;text-transform:uppercase;letter-spacing:.5px;}
-
-  #map{width:100%;height:200px;border-radius:4px;margin-bottom:6px;border:1px solid var(--line);filter:invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);}
-  .map-note{text-align:center;font-size:11px;color:var(--dim);margin:0 0 12px;}
-
-  button{display:block;width:100%;padding:13px;border:1px solid var(--line);border-radius:4px;background:var(--panel2);color:var(--green);font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-bottom:12px;font-family:inherit;}
-  button:active{background:#000;}
-  #resetWifiBtn{color:var(--red);border-color:#4a1414;}
-  #recalBtn{color:var(--blue);border-color:#0f3a4a;}
-  #dlBtn{color:var(--blue);border-color:#0f3a4a;}
-
-  #adminPanel{display:none;}
-  .admin-table{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:12px;}
-  .admin-table td{padding:9px 12px;border-bottom:1px solid var(--line);font-size:12px;}
-  .admin-table td:first-child{color:var(--dim);}
-  .admin-table td:last-child{text-align:right;font-weight:600;color:var(--text);}
-  .admin-table tr:last-child td{border-bottom:none;}
-  .section-title{font-size:11px;font-weight:700;color:var(--amber);margin:14px 0 6px;text-transform:uppercase;letter-spacing:1px;}
-  .footer{text-align:center;font-size:10px;color:var(--dim);margin-top:6px;letter-spacing:.5px;}
-
-  #eventLogList{background:var(--panel);border:1px solid var(--line);border-radius:4px;margin-bottom:12px;overflow:hidden;}
-  .event-row{display:flex;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--line);font-size:11.5px;}
-  .event-row:last-child{border-bottom:none;}
-
-  .horizon-wrap{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px;margin-bottom:10px;}
-  #horizonSvg{border-radius:50%;flex-shrink:0;}
-  .horizon-labels{display:flex;flex-direction:column;gap:10px;text-align:center;flex:1;}
-
-  .gf-row{display:flex;gap:8px;margin-bottom:12px;}
-  .gf-row input{flex:1;padding:11px;border-radius:4px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:13px;font-family:inherit;}
-  .gf-row button{width:auto;flex:1;margin-bottom:0;}
-
-  .conn-row{display:flex;gap:8px;margin-bottom:6px;}
-  .conn-row input{flex:1;padding:11px;border-radius:4px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:13px;font-family:inherit;}
-  .conn-row button{width:auto;margin-bottom:0;padding:11px 16px;}
-  .conn-hint{font-size:10.5px;color:var(--dim);margin-bottom:12px;line-height:1.5;}
-  .gear{background:none;border:none;color:var(--dim);font-size:16px;position:absolute;top:12px;right:12px;cursor:pointer;width:auto;padding:4px;margin:0;}
-  #settingsPanel{display:none;}
+  /* ---- Added only for the PWA device-address settings, same visual language as the rest ---- */
+  .settings-card {
+    background: white;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .gear-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: none; border: none; width: auto; margin: 0; padding: 4px 8px;
+    color: #888; font-size: 18px; box-shadow: none;
+  }
+  .gear-btn:active { background: none; }
+  #settingsPanel { display: none; margin-top: 8px; }
+  .conn-row { display:flex; gap:8px; margin-bottom: 8px; }
+  .conn-row input {
+    flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #ccc; font-size: 14px;
+  }
+  .conn-row button { width: auto; margin-bottom: 0; padding: 12px 18px; }
+  .conn-hint { font-size: 12px; color: #888; line-height: 1.5; }
 </style>
 </head>
 <body>
 
-  <div class="panel corner-brackets" style="position:relative;">
-    <button class="gear" onclick="toggleSettings()" title="Device settings">&#9881;</button>
-    <h1>YAKSHA // Landslide Monitor</h1>
-    <div class="subtitle">Team YAKSHA &middot; TEXMiN</div>
-
+  <div class="settings-card">
+    <button class="gear-btn" onclick="toggleSettings()" title="Device address">&#9881;&#65039;</button>
+    <h1 style="margin-bottom:0;">Landslide Monitor</h1>
+    <div class="subtitle" style="margin-bottom:0;">Team YAKSHA</div>
     <div id="settingsPanel">
       <div class="conn-row">
         <input id="deviceAddr" type="text" placeholder="landslide.local or 192.168.x.x">
         <button onclick="saveDevice()">Save</button>
       </div>
       <div class="conn-hint">
-        Enter the receiver's mDNS name (<b>landslide.local</b>) or its IP as shown on the OLED / dashboard admin panel.
-        Your phone/laptop must be on the same WiFi as the receiver. If the receiver is in its own AP mode
-        ("Landslide-Setup"), connect to that network directly and use <b>192.168.4.1</b>.
+        Enter the receiver's address: <b>landslide.local</b>, or its IP shown on the OLED /
+        dashboard. Phone must be on the same WiFi as the receiver (or connected to
+        "Landslide-Setup" and using <b>192.168.4.1</b> if it's still in setup mode).
       </div>
     </div>
   </div>
 
   <div id="linkBanner" class="link-banner link-down">Connecting...</div>
 
-  <div id="statusCard" class="status-card" style="background:#141a1c;">
+  <button id="soundToggleBtn" onclick="toggleSound()" style="background:#34495e;">🔊 Phone Siren: ON (tap to mute)</button>
+  <button id="ackBtn" onclick="acknowledgeAlert()" style="background:#c0392b; display:none;">✓ Acknowledge Alert (silence phone siren)</button>
+
+  <div id="statusCard" class="status-card" style="background:#95a5a6;">
     <div id="statusLevel" class="status-level">--</div>
     <div id="statusMessage" class="status-message">Waiting for data...</div>
   </div>
 
   <div class="alert-strip">
-    <div id="chipLandslide" class="alert-chip chip-landslide">&#128680; LANDSLIDE WARNING &mdash; GPS shift confirmed by tilt/vibration. Evacuate the area.</div>
-    <div id="chipMoved" class="alert-chip chip-full">&#128207; FULL ALERT &mdash; the box has tilted/rolled from its mounted position.</div>
-    <div id="chipVib" class="alert-chip chip-vib">&#9888; Vibration detected underground &mdash; alerting for the next minute.</div>
-    <div id="chipGps" class="alert-chip chip-gps">&#128225; GPS position drifting beyond the geofence &mdash; watching closely.</div>
-    <div id="chipRain" class="alert-chip chip-rain">&#127783; Soil is getting wetter &mdash; rain may be softening the ground.</div>
-    <div id="chipSiren" class="alert-chip chip-siren">&#128266; Siren sounding</div>
+    <div id="chipLandslide" class="alert-chip chip-landslide">🚨 LANDSLIDE WARNING — GPS shift confirmed by tilt/vibration. Evacuate the area.</div>
+    <div id="chipMoved" class="alert-chip chip-full">📐 FULL ALERT — the box has tilted/rolled from its mounted position.</div>
+    <div id="chipVib" class="alert-chip chip-vib">⚠️ Vibration detected underground — alerting for the next minute.</div>
+    <div id="chipGps" class="alert-chip chip-gps">📡 GPS position drifting beyond the geofence — watching closely.</div>
+    <div id="chipRain" class="alert-chip chip-rain">🌧️ Soil is getting wetter — rain may be softening the ground.</div>
+    <div id="chipSiren" class="alert-chip chip-siren">🔊 Siren sounding</div>
   </div>
 
   <div class="mini-grid">
-    <div class="mini-card"><div id="tempValue" class="mini-value">--&deg;</div><div class="mini-label">Temperature</div></div>
-    <div class="mini-card"><div id="humValue" class="mini-value">--%</div><div class="mini-label">Humidity</div></div>
-    <div class="mini-card"><div id="soilValue" class="mini-value">--%</div><div class="mini-label">Soil Moisture</div></div>
+    <div class="mini-card">
+      <div id="tempValue" class="mini-value">--°</div>
+      <div class="mini-label">Temperature</div>
+    </div>
+    <div class="mini-card">
+      <div id="humValue" class="mini-value">--%</div>
+      <div class="mini-label">Humidity</div>
+    </div>
+    <div class="mini-card">
+      <div id="soilValue" class="mini-value">--%</div>
+      <div class="mini-label">Soil Moisture</div>
+    </div>
   </div>
 
   <div id="map"></div>
@@ -153,27 +199,29 @@
 
     <div class="section-title">Tilt / Orientation (relative to calibrated baseline)</div>
     <div class="horizon-wrap">
-      <svg id="horizonSvg" viewBox="0 0 200 200" width="180" height="180">
-        <defs><clipPath id="horizonClip"><circle cx="100" cy="100" r="90"/></clipPath></defs>
-        <circle cx="100" cy="100" r="92" fill="#000" />
+      <svg id="horizonSvg" viewBox="0 0 200 200" width="200" height="200">
+        <defs>
+          <clipPath id="horizonClip"><circle cx="100" cy="100" r="90"/></clipPath>
+        </defs>
+        <circle cx="100" cy="100" r="92" fill="#222" />
         <g clip-path="url(#horizonClip)">
           <g id="horizonGroup">
-            <rect x="-100" y="-300" width="400" height="300" fill="#0a3a55" />
-            <rect x="-100" y="0" width="400" height="300" fill="#3a2a12" />
-            <line x1="-100" y1="0" x2="300" y2="0" stroke="#00ff9d" stroke-width="2"/>
+            <rect x="-100" y="-300" width="400" height="300" fill="#3a86ff" />
+            <rect x="-100" y="0" width="400" height="300" fill="#8a5a2b" />
+            <line x1="-100" y1="0" x2="300" y2="0" stroke="white" stroke-width="2"/>
           </g>
         </g>
-        <circle cx="100" cy="100" r="90" fill="none" stroke="#233034" stroke-width="4" />
-        <line x1="60" y1="100" x2="85" y2="100" stroke="#ffb000" stroke-width="4" />
-        <line x1="115" y1="100" x2="140" y2="100" stroke="#ffb000" stroke-width="4" />
-        <polygon points="100,92 108,104 92,104" fill="#ffb000" />
+        <circle cx="100" cy="100" r="90" fill="none" stroke="#555" stroke-width="4" />
+        <line x1="60" y1="100" x2="85" y2="100" stroke="#ffd400" stroke-width="4" />
+        <line x1="115" y1="100" x2="140" y2="100" stroke="#ffd400" stroke-width="4" />
+        <polygon points="100,92 108,104 92,104" fill="#ffd400" />
       </svg>
       <div class="horizon-labels">
-        <div><span class="mini-label">Pitch</span><div id="a_relpitch" class="mini-value" style="font-size:18px;">--</div></div>
-        <div><span class="mini-label">Roll</span><div id="a_relroll" class="mini-value" style="font-size:18px;">--</div></div>
+        <div><span class="mini-label">Pitch</span><div id="a_relpitch" class="mini-value" style="font-size:20px;">--</div></div>
+        <div><span class="mini-label">Roll</span><div id="a_relroll" class="mini-value" style="font-size:20px;">--</div></div>
       </div>
     </div>
-    <button id="recalBtn" onclick="recalibrate()">Recalibrate (set current position as level)</button>
+    <button id="recalBtn" onclick="recalibrate()" style="background:#3a86ff;">Recalibrate (set current position as level)</button>
     <table class="admin-table">
       <tr><td>Raw Pitch / Roll</td><td id="a_pitch">--</td></tr>
       <tr><td>Baseline Pitch / Roll</td><td id="a_baseline">--</td></tr>
@@ -207,9 +255,10 @@
       <tr><td>GPS Drift Alert</td><td id="a_gpsalert">--</td></tr>
       <tr><td>MPU Verified (Landslide)</td><td id="a_landslide">--</td></tr>
     </table>
-    <div class="gf-row">
-      <input id="geofenceInput" type="number" min="1" max="500" step="0.5" placeholder="radius in meters">
-      <button onclick="setGeofence()">Set Geofence</button>
+    <div style="display:flex; gap:8px; margin-bottom:20px;">
+      <input id="geofenceInput" type="number" min="1" max="500" step="0.5" placeholder="radius in meters"
+        style="flex:1; padding:12px; border-radius:10px; border:1px solid #ccc; font-size:14px;">
+      <button style="width:auto; margin-bottom:0; flex:1;" onclick="setGeofence()">Set Geofence</button>
     </div>
 
     <div class="section-title">Risk / Prediction Engine</div>
@@ -227,7 +276,7 @@
       <tr><td>Card Status</td><td id="a_sdstatus">--</td></tr>
       <tr><td>Rows Logged</td><td id="a_sdrows">--</td></tr>
     </table>
-    <button id="dlBtn" onclick="downloadLog()">Download Log (CSV)</button>
+    <button style="background:#3a86ff;" onclick="downloadLog()">Download Log (CSV)</button>
 
     <div class="section-title">Event Log</div>
     <div id="eventLogList"><div class="event-row"><span>No events yet</span></div></div>
@@ -236,14 +285,13 @@
 
   </div>
 
-  <div class="footer">Landslide Early-Warning System &middot; PWA v1</div>
+  <div class="footer">Landslide Early-Warning System</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ---------------- Device address (persisted) ----------------
+// ---------------- Device address (persisted so you don't retype it) ----------------
 let deviceAddr = localStorage.getItem('yaksha_device_addr') || 'landslide.local';
 document.getElementById('deviceAddr').value = deviceAddr;
-
 function base() { return 'http://' + deviceAddr; }
 
 function saveDevice() {
@@ -254,27 +302,167 @@ function saveDevice() {
   toggleSettings();
   refresh();
 }
-
 let settingsOpen = false;
 function toggleSettings() {
   settingsOpen = !settingsOpen;
   document.getElementById('settingsPanel').style.display = settingsOpen ? 'block' : 'none';
 }
-// Open settings automatically on first run so the user sets their device address
 if (!localStorage.getItem('yaksha_device_addr')) { settingsOpen = true; document.getElementById('settingsPanel').style.display = 'block'; }
+
+// ---------------- Phone siren ----------------
+// You have no physical buzzer, so THIS is the siren - real audio playing from
+// the phone's speaker, driven by the receiver's live alert flags. Three
+// different siren characters, same priority the firmware would have used:
+//   landslide (confirmed)  -> loud continuous hi-lo two-tone wail
+//   box moved/tilt         -> fast rising/falling wail
+//   vibration              -> quicker double-chirp with a pause
+let audioCtx = null, oscillator = null, gainNode = null;
+let soundEnabled = localStorage.getItem('yaksha_sound_enabled') !== '0'; // ON by default
+let sirenTimer = null;
+let currentPattern = 'none';
+let acknowledgedPattern = 'none';
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  gainNode = audioCtx.createGain();
+  gainNode.gain.value = 0;
+  oscillator = audioCtx.createOscillator();
+  oscillator.type = 'sawtooth';   // harsher/more "siren" than a plain sine
+  oscillator.frequency.value = 800;
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+  oscillator.start();
+}
+
+// Phones/browsers block audio until a real tap happens somewhere on the page.
+// Unlock on the FIRST tap/click anywhere - not just the siren button - so it's
+// armed as soon as you open the app and touch it at all.
+function unlockAudioOnce() {
+  if (!soundEnabled) return;
+  initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+document.addEventListener('touchstart', unlockAudioOnce, { once: true, passive: true });
+document.addEventListener('click', unlockAudioOnce, { once: true });
+
+function updateSoundBtn() {
+  const b = document.getElementById('soundToggleBtn');
+  b.textContent = soundEnabled ? '\uD83D\uDD0A Phone Siren: ON (tap to mute)' : '\uD83D\uDD07 Phone Siren: OFF (tap to enable)';
+}
+
+function toggleSound() {
+  if (!soundEnabled) {
+    soundEnabled = true;
+    localStorage.setItem('yaksha_sound_enabled', '1');
+    initAudio();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } else {
+    soundEnabled = false;
+    localStorage.setItem('yaksha_sound_enabled', '0');
+    setPattern('none');
+  }
+  updateSoundBtn();
+}
+updateSoundBtn();
+if (soundEnabled) { initAudio(); } // context exists immediately; still needs one real tap/click to actually unmute on most phones
+
+// Smoothly glide the oscillator's pitch to a new frequency over `dur` seconds
+// - this is what makes it sound like a real siren instead of a video-game blip.
+function glideTo(freq, dur) {
+  const t = audioCtx.currentTime;
+  oscillator.frequency.cancelScheduledValues(t);
+  oscillator.frequency.setValueAtTime(oscillator.frequency.value, t);
+  oscillator.frequency.linearRampToValueAtTime(freq, t + dur);
+}
+
+function setPattern(pattern) {
+  if (pattern === currentPattern) return;
+  currentPattern = pattern;
+  if (sirenTimer) { clearInterval(sirenTimer); sirenTimer = null; }
+  if (!soundEnabled || !audioCtx || pattern === 'none') {
+    if (gainNode) gainNode.gain.setTargetAtTime(0, audioCtx ? audioCtx.currentTime : 0, 0.05);
+    return;
+  }
+
+  if (pattern === 'landslide') {
+    // Loud continuous hi-lo two-tone wail (classic ambulance-style siren)
+    gainNode.gain.setTargetAtTime(0.35, audioCtx.currentTime, 0.05);
+    let hi = true;
+    glideTo(hi ? 1300 : 750, 0.5);
+    sirenTimer = setInterval(() => {
+      hi = !hi;
+      glideTo(hi ? 1300 : 750, 0.5);
+    }, 550);
+
+  } else if (pattern === 'moved') {
+    // Fast rising/falling wail - urgent, but a notch below the landslide tone
+    gainNode.gain.setTargetAtTime(0.3, audioCtx.currentTime, 0.05);
+    let up = true;
+    glideTo(up ? 1450 : 550, 0.22);
+    sirenTimer = setInterval(() => {
+      up = !up;
+      glideTo(up ? 1450 : 550, 0.22);
+    }, 240);
+
+  } else if (pattern === 'vib') {
+    // Quicker double-chirp, then a pause - the least urgent of the three
+    oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime);
+    let step = 0;
+    sirenTimer = setInterval(() => {
+      const on = (step % 5) < 2; // chirp, chirp, pause, pause, pause
+      gainNode.gain.setTargetAtTime(on ? 0.3 : 0, audioCtx.currentTime, 0.01);
+      step++;
+    }, 160);
+  }
+}
+
+function acknowledgeAlert() {
+  acknowledgedPattern = currentPattern;
+  setPattern('none');
+  document.getElementById('ackBtn').style.display = 'none';
+}
+
+// Decides which phone-siren pattern should be playing based on the latest /data,
+// same priority the firmware itself uses for its own buzzer.
+function updateSirenFromData(d) {
+  let wanted = 'none';
+  if (d.landslideWarning) wanted = 'landslide';
+  else if (d.boxMovedAlert) wanted = 'moved';
+  else if (d.vibrationAlert) wanted = 'vib';
+
+  if (wanted === 'none') {
+    acknowledgedPattern = 'none';
+    document.getElementById('ackBtn').style.display = 'none';
+    setPattern('none');
+    return;
+  }
+
+  if (wanted !== acknowledgedPattern) {
+    setPattern(wanted);
+    document.getElementById('ackBtn').style.display = 'block';
+  } else {
+    setPattern('none'); // stays acknowledged/silenced until it clears or escalates
+  }
+
+  if (navigator.vibrate) {
+    if (wanted === 'landslide') navigator.vibrate([300, 100, 300, 100, 300]);
+    else if (wanted === 'moved') navigator.vibrate([200, 100, 200]);
+    else if (wanted === 'vib') navigator.vibrate([120, 80, 120]);
+  }
+}
 
 let adminOpen = false;
 function toggleAdmin() {
   adminOpen = !adminOpen;
   document.getElementById('adminPanel').style.display = adminOpen ? 'block' : 'none';
-  document.querySelectorAll('button')[1].textContent = adminOpen ? 'Hide Admin View' : 'Admin View';
+  document.querySelector('body > button').textContent = adminOpen ? 'Hide Admin View' : 'Admin View';
 }
-
 function resetWifi() {
-  if (!confirm('This will forget the saved WiFi and reboot the receiver into setup mode. Continue?')) return;
-  fetch(base() + '/resetwifi', { method: 'POST' })
-    .then(() => alert('WiFi reset. The board is rebooting into setup mode (open network: Landslide-Setup).'))
-    .catch(() => alert('Could not reach the device. Check the address in settings and your WiFi connection.'));
+  if (!confirm('This will forget the saved WiFi and reboot into setup mode. Continue?')) return;
+  fetch(base() + '/resetwifi', { method: 'POST' }).then(() => {
+    alert('WiFi reset. The board is rebooting into setup mode (open network: Landslide-Setup).');
+  }).catch(() => alert('Could not reach the device. Check the address in settings.'));
 }
 
 function recalibrate() {
@@ -303,7 +491,8 @@ function ensureMap(lat, lng) {
   if (mapReady) return;
   map = L.map('map').setView([lat, lng], 17);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors', maxZoom: 19
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 19
   }).addTo(map);
   marker = L.marker([lat, lng]).addTo(map);
   mapReady = true;
@@ -330,6 +519,8 @@ function refresh() {
     document.getElementById('chipRain').classList.toggle('show', !!d.rainfallLikely);
     document.getElementById('chipLandslide').classList.toggle('show', !!d.landslideWarning);
     document.getElementById('chipSiren').classList.toggle('show', !!(d.vibrationAlert || d.boxMovedAlert || d.landslideWarning));
+
+    updateSirenFromData(d);
 
     document.getElementById('tempValue').textContent = d.temperature.toFixed(1) + '\u00b0C';
     document.getElementById('humValue').textContent = d.humidity.toFixed(0) + '%';
@@ -388,14 +579,14 @@ function refresh() {
     }
   }).catch(() => {
     document.getElementById('linkBanner').className = 'link-banner link-down';
-    document.getElementById('linkBanner').textContent = 'Cannot reach ' + deviceAddr + ' \u2014 check settings / WiFi';
+    document.getElementById('linkBanner').textContent = 'Cannot reach ' + deviceAddr + ' \u2014 check settings';
   });
 }
 
 setInterval(refresh, 1000);
 refresh();
 
-// ---------------- PWA service worker ----------------
+// ---------------- PWA install support ----------------
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('service-worker.js').catch(() => {});
