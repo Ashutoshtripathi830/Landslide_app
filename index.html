@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f4f6f8">
+<meta name="theme-color" content="#eef1ec">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Landslide">
@@ -12,137 +12,20 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    background: #f4f6f8;
-    color: #222;
-    padding: 20px;
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  h1 { font-size: 22px; text-align: center; margin-bottom: 4px; color: #333; }
-  .subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 20px; }
-  .status-card {
-    border-radius: 16px;
-    padding: 30px 20px;
-    text-align: center;
-    color: white;
-    margin-bottom: 16px;
-    transition: background 0.5s ease;
-  }
-  .status-level { font-size: 40px; font-weight: 800; letter-spacing: 1px; }
-  .status-message { font-size: 16px; margin-top: 10px; opacity: 0.95; }
-  .link-banner {
-    text-align: center;
-    padding: 8px;
-    border-radius: 8px;
-    font-size: 13px;
-    margin-bottom: 16px;
-    font-weight: 600;
-  }
-  .link-up { background: #e8f8f0; color: #1e8449; }
-  .link-down { background: #fdecea; color: #c0392b; }
-  .alert-strip { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
-  .alert-chip { display:none; padding:12px 14px; border-radius:10px; font-size:14px; font-weight:600; align-items:center; gap:8px; }
-  .alert-chip.show { display:flex; }
-  @keyframes pulseAlert { 0%{opacity:1;} 50%{opacity:0.55;} 100%{opacity:1;} }
-  .chip-vib { background:#fff2e0; color:#a5610a; animation: pulseAlert 1.3s infinite; }
-  .chip-full { background:#fdecea; color:#c0392b; border:2px solid #c0392b; animation: pulseAlert 1s infinite; }
-  .chip-landslide { background:#c0392b; color:white; font-weight:800; border:3px solid #7b241c; animation: pulseAlert 0.6s infinite; }
-  .chip-gps { background:#fdf2e3; color:#a5610a; }
-  .chip-rain { background:#e8f2fd; color:#1a5fa8; }
-  .chip-siren { background:#2c3e50; color:white; animation: pulseAlert 0.8s infinite; }
-  .mini-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .mini-card {
-    background: white;
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-  }
-  .mini-value { font-size: 26px; font-weight: 700; color: #333; }
-  .mini-label { font-size: 12px; color: #888; margin-top: 4px; }
-  #map { width:100%; height:220px; border-radius:12px; margin-bottom:20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-  .map-note { text-align:center; font-size:12px; color:#888; margin:-12px 0 20px; }
-  button {
-    display: block;
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 10px;
-    background: #34495e;
-    color: white;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-bottom: 20px;
-  }
-  button:active { background: #2c3e50; }
-  #adminPanel { display: none; }
-  .admin-table {
-    width: 100%;
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    margin-bottom: 20px;
-  }
-  .admin-table td {
-    padding: 10px 14px;
-    border-bottom: 1px solid #eee;
-    font-size: 13px;
-  }
-  .admin-table td:first-child { color: #888; }
-  .admin-table td:last-child { text-align: right; font-weight: 600; color: #222; }
-  .admin-table tr:last-child td { border-bottom: none; }
-  .section-title { font-size: 13px; font-weight: 700; color: #555; margin: 16px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .footer { text-align: center; font-size: 11px; color: #aaa; margin-top: 10px; }
-  #eventLogList { background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom: 20px; overflow: hidden; }
-  .event-row { display: flex; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid #eee; font-size: 13px; }
-  .event-row:last-child { border-bottom: none; }
-  #resetWifiBtn { background:#c0392b; }
-  #resetWifiBtn:active { background:#96281b; }
-  .horizon-wrap { display:flex; align-items:center; gap:16px; background:white; border-radius:12px; padding:16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom:12px; }
-  #horizonSvg { border-radius:50%; flex-shrink:0; }
-  .horizon-labels { display:flex; flex-direction:column; gap:12px; text-align:center; flex:1; }
-
-  /* ---- Added only for the PWA device-address settings, same visual language as the rest ---- */
-  .settings-card {
-    background: white;
-    border-radius: 12px;
-    padding: 14px 16px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    margin-bottom: 16px;
-    position: relative;
-  }
-  .gear-btn {
-    position: absolute; top: 10px; right: 10px;
-    background: none; border: none; width: auto; margin: 0; padding: 4px 8px;
-    color: #888; font-size: 18px; box-shadow: none;
-  }
-  .gear-btn:active { background: none; }
-  #settingsPanel { display: none; margin-top: 8px; }
-  .conn-row { display:flex; gap:8px; margin-bottom: 8px; }
-  .conn-row input {
-    flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #ccc; font-size: 14px;
-  }
-  .conn-row button { width: auto; margin-bottom: 0; padding: 12px 18px; }
-  .conn-hint { font-size: 12px; color: #888; line-height: 1.5; }
-</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <div class="settings-card">
     <button class="gear-btn" onclick="toggleSettings()" title="Device address">&#9881;&#65039;</button>
-    <h1 style="margin-bottom:0;">Landslide Monitor</h1>
-    <div class="subtitle" style="margin-bottom:0;">Team YAKSHA</div>
+    <img class="brand-mark" src="icon-192.png" alt="Team YAKSHA emblem">
+    <div class="brand-text">
+      <h1 style="margin-bottom:0;">Landslide Monitor</h1>
+      <div class="subtitle" style="margin-bottom:0;">12 Engineer Regiment &nbsp;·&nbsp; Early-Warning Dashboard</div>
+    </div>
     <div id="settingsPanel">
       <div class="conn-row">
         <input id="deviceAddr" type="text" placeholder="landslide.local or 192.168.x.x">
@@ -193,7 +76,7 @@
   <div id="map"></div>
   <div class="map-note" id="mapNote">Waiting for GPS fix...</div>
 
-  <button onclick="toggleAdmin()">Admin View</button>
+  <button id="adminToggleBtn" onclick="toggleAdmin()">Admin View</button>
 
   <div id="adminPanel">
 
@@ -456,7 +339,7 @@ let adminOpen = false;
 function toggleAdmin() {
   adminOpen = !adminOpen;
   document.getElementById('adminPanel').style.display = adminOpen ? 'block' : 'none';
-  document.querySelector('body > button').textContent = adminOpen ? 'Hide Admin View' : 'Admin View';
+  document.getElementById('adminToggleBtn').textContent = adminOpen ? 'Hide Admin View' : 'Admin View';
 }
 function resetWifi() {
   if (!confirm('This will forget the saved WiFi and reboot into setup mode. Continue?')) return;
