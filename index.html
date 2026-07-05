@@ -1,22 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#eef1ec">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Landslide">
-<title>Landslide Monitor</title>
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#eef1ec">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Landslide">
+  <title>Landslide Monitor</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
   <div class="settings-card">
@@ -41,8 +45,10 @@
 
   <div id="linkBanner" class="link-banner link-down">Connecting...</div>
 
-  <button id="soundToggleBtn" onclick="toggleSound()" style="background:#34495e;">🔊 Phone Siren: ON (tap to mute)</button>
-  <button id="ackBtn" onclick="acknowledgeAlert()" style="background:#c0392b; display:none;">✓ Acknowledge Alert (silence phone siren)</button>
+  <button id="soundToggleBtn" onclick="toggleSound()" style="background:#34495e;">🔊 Phone Siren: ON (tap to
+    mute)</button>
+  <button id="ackBtn" onclick="acknowledgeAlert()" style="background:#c0392b; display:none;">✓ Acknowledge Alert
+    (silence phone siren)</button>
 
   <div id="statusCard" class="status-card" style="background:#95a5a6;">
     <div id="statusLevel" class="status-level">--</div>
@@ -50,9 +56,12 @@
   </div>
 
   <div class="alert-strip">
-    <div id="chipLandslide" class="alert-chip chip-landslide">🚨 LANDSLIDE WARNING — GPS shift confirmed by tilt/vibration. Evacuate the area.</div>
-    <div id="chipMoved" class="alert-chip chip-full">📐 FULL ALERT — the box has tilted/rolled from its mounted position.</div>
-    <div id="chipVib" class="alert-chip chip-vib">⚠️ Vibration detected underground — alerting for the next minute.</div>
+    <div id="chipLandslide" class="alert-chip chip-landslide">🚨 LANDSLIDE WARNING — GPS shift confirmed by
+      tilt/vibration. Evacuate the area.</div>
+    <div id="chipMoved" class="alert-chip chip-full">📐 FULL ALERT — the box has tilted/rolled from its mounted
+      position.</div>
+    <div id="chipVib" class="alert-chip chip-vib">⚠️ Vibration detected underground — alerting for the next minute.
+    </div>
     <div id="chipGps" class="alert-chip chip-gps">📡 GPS position drifting beyond the geofence — watching closely.</div>
     <div id="chipRain" class="alert-chip chip-rain">🌧️ Soil is getting wetter — rain may be softening the ground.</div>
     <div id="chipSiren" class="alert-chip chip-siren">🔊 Siren sounding</div>
@@ -84,14 +93,16 @@
     <div class="horizon-wrap">
       <svg id="horizonSvg" viewBox="0 0 200 200" width="200" height="200">
         <defs>
-          <clipPath id="horizonClip"><circle cx="100" cy="100" r="90"/></clipPath>
+          <clipPath id="horizonClip">
+            <circle cx="100" cy="100" r="90" />
+          </clipPath>
         </defs>
         <circle cx="100" cy="100" r="92" fill="#222" />
         <g clip-path="url(#horizonClip)">
           <g id="horizonGroup">
             <rect x="-100" y="-300" width="400" height="300" fill="#3a86ff" />
             <rect x="-100" y="0" width="400" height="300" fill="#8a5a2b" />
-            <line x1="-100" y1="0" x2="300" y2="0" stroke="white" stroke-width="2"/>
+            <line x1="-100" y1="0" x2="300" y2="0" stroke="white" stroke-width="2" />
           </g>
         </g>
         <circle cx="100" cy="100" r="90" fill="none" stroke="#555" stroke-width="4" />
@@ -100,43 +111,105 @@
         <polygon points="100,92 108,104 92,104" fill="#ffd400" />
       </svg>
       <div class="horizon-labels">
-        <div><span class="mini-label">Pitch</span><div id="a_relpitch" class="mini-value" style="font-size:20px;">--</div></div>
-        <div><span class="mini-label">Roll</span><div id="a_relroll" class="mini-value" style="font-size:20px;">--</div></div>
+        <div><span class="mini-label">Pitch</span>
+          <div id="a_relpitch" class="mini-value" style="font-size:20px;">--</div>
+        </div>
+        <div><span class="mini-label">Roll</span>
+          <div id="a_relroll" class="mini-value" style="font-size:20px;">--</div>
+        </div>
       </div>
     </div>
-    <button id="recalBtn" onclick="recalibrate()" style="background:#3a86ff;">Recalibrate (set current position as level)</button>
+    <button id="recalBtn" onclick="recalibrate()" style="background:#3a86ff;">Recalibrate (set current position as
+      level)</button>
     <table class="admin-table">
-      <tr><td>Raw Pitch / Roll</td><td id="a_pitch">--</td></tr>
-      <tr><td>Baseline Pitch / Roll</td><td id="a_baseline">--</td></tr>
-      <tr><td>Box Moved Alert</td><td id="a_movedalert">--</td></tr>
-      <tr><td>Accel X / Y / Z</td><td id="a_accel">--</td></tr>
-      <tr><td>Gyro X / Y / Z</td><td id="a_gyro">--</td></tr>
+      <tr>
+        <td>Raw Pitch / Roll</td>
+        <td id="a_pitch">--</td>
+      </tr>
+      <tr>
+        <td>Baseline Pitch / Roll</td>
+        <td id="a_baseline">--</td>
+      </tr>
+      <tr>
+        <td>Box Moved Alert</td>
+        <td id="a_movedalert">--</td>
+      </tr>
+      <tr>
+        <td>Accel X / Y / Z</td>
+        <td id="a_accel">--</td>
+      </tr>
+      <tr>
+        <td>Gyro X / Y / Z</td>
+        <td id="a_gyro">--</td>
+      </tr>
     </table>
 
     <div class="section-title">Vibration</div>
     <table class="admin-table">
-      <tr><td>Sensor (now)</td><td id="a_vib">--</td></tr>
-      <tr><td>Vibration Rate Score</td><td id="a_vibrate">--</td></tr>
-      <tr><td>Vibration Alert</td><td id="a_vibalert">--</td></tr>
+      <tr>
+        <td>Sensor (now)</td>
+        <td id="a_vib">--</td>
+      </tr>
+      <tr>
+        <td>Vibration Rate Score</td>
+        <td id="a_vibrate">--</td>
+      </tr>
+      <tr>
+        <td>Vibration Alert</td>
+        <td id="a_vibalert">--</td>
+      </tr>
     </table>
 
     <div class="section-title">Ground</div>
     <table class="admin-table">
-      <tr><td>Soil Moisture (raw ADC)</td><td id="a_soil">--</td></tr>
-      <tr><td>Soil Moisture (%)</td><td id="a_soilpct">--</td></tr>
-      <tr><td>Rainfall Likely</td><td id="a_rain">--</td></tr>
+      <tr>
+        <td>Soil Moisture (raw ADC)</td>
+        <td id="a_soil">--</td>
+      </tr>
+      <tr>
+        <td>Soil Moisture (%)</td>
+        <td id="a_soilpct">--</td>
+      </tr>
+      <tr>
+        <td>Rainfall Likely</td>
+        <td id="a_rain">--</td>
+      </tr>
     </table>
 
     <div class="section-title">GPS / Ground Movement (Geofence)</div>
     <table class="admin-table">
-      <tr><td>Fix</td><td id="a_fix">--</td></tr>
-      <tr><td>Lat / Lng</td><td id="a_latlng">--</td></tr>
-      <tr><td>Satellites</td><td id="a_sats">--</td></tr>
-      <tr><td>Home Locked</td><td id="a_home">--</td></tr>
-      <tr><td>Distance From Home</td><td id="a_dist">--</td></tr>
-      <tr><td>Geofence Radius</td><td id="a_geofence">--</td></tr>
-      <tr><td>GPS Drift Alert</td><td id="a_gpsalert">--</td></tr>
-      <tr><td>MPU Verified (Landslide)</td><td id="a_landslide">--</td></tr>
+      <tr>
+        <td>Fix</td>
+        <td id="a_fix">--</td>
+      </tr>
+      <tr>
+        <td>Lat / Lng</td>
+        <td id="a_latlng">--</td>
+      </tr>
+      <tr>
+        <td>Satellites</td>
+        <td id="a_sats">--</td>
+      </tr>
+      <tr>
+        <td>Home Locked</td>
+        <td id="a_home">--</td>
+      </tr>
+      <tr>
+        <td>Distance From Home</td>
+        <td id="a_dist">--</td>
+      </tr>
+      <tr>
+        <td>Geofence Radius</td>
+        <td id="a_geofence">--</td>
+      </tr>
+      <tr>
+        <td>GPS Drift Alert</td>
+        <td id="a_gpsalert">--</td>
+      </tr>
+      <tr>
+        <td>MPU Verified (Landslide)</td>
+        <td id="a_landslide">--</td>
+      </tr>
     </table>
     <div style="display:flex; gap:8px; margin-bottom:20px;">
       <input id="geofenceInput" type="number" min="1" max="500" step="0.5" placeholder="radius in meters"
@@ -146,335 +219,391 @@
 
     <div class="section-title">Risk / Prediction Engine</div>
     <table class="admin-table">
-      <tr><td>Risk Score</td><td id="a_score">--</td></tr>
-      <tr><td>Packets Received</td><td id="a_count">--</td></tr>
-      <tr><td>Checksum Errors</td><td id="a_errs">--</td></tr>
-      <tr><td>Last Packet</td><td id="a_lastpkt">--</td></tr>
-      <tr><td>Network</td><td id="a_wifi">--</td></tr>
-      <tr><td>LED Strip</td><td id="a_led">--</td></tr>
+      <tr>
+        <td>Risk Score</td>
+        <td id="a_score">--</td>
+      </tr>
+      <tr>
+        <td>Packets Received</td>
+        <td id="a_count">--</td>
+      </tr>
+      <tr>
+        <td>Checksum Errors</td>
+        <td id="a_errs">--</td>
+      </tr>
+      <tr>
+        <td>Last Packet</td>
+        <td id="a_lastpkt">--</td>
+      </tr>
+      <tr>
+        <td>Network</td>
+        <td id="a_wifi">--</td>
+      </tr>
+      <tr>
+        <td>LED Strip</td>
+        <td id="a_led">--</td>
+      </tr>
     </table>
 
     <div class="section-title">SD Card Logger</div>
     <table class="admin-table">
-      <tr><td>Card Status</td><td id="a_sdstatus">--</td></tr>
-      <tr><td>Rows Logged</td><td id="a_sdrows">--</td></tr>
+      <tr>
+        <td>Card Status</td>
+        <td id="a_sdstatus">--</td>
+      </tr>
+      <tr>
+        <td>Rows Logged</td>
+        <td id="a_sdrows">--</td>
+      </tr>
     </table>
     <button style="background:#3a86ff;" onclick="downloadLog()">Download Log (CSV)</button>
 
     <div class="section-title">Event Log</div>
-    <div id="eventLogList"><div class="event-row"><span>No events yet</span></div></div>
+    <div id="eventLogList">
+      <div class="event-row"><span>No events yet</span></div>
+    </div>
 
     <button id="resetWifiBtn" onclick="resetWifi()">Reset WiFi (back to setup mode)</button>
 
   </div>
 
-  <div class="footer">Landslide Early-Warning System</div>
+  <div class="footer">
+    Landslide Early-Warning System<br>
+    <a href="#" id="installAppLink" class="install-link">&#11015;&#65039; Install App</a>
+  </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-// ---------------- Device address (persisted so you don't retype it) ----------------
-let deviceAddr = localStorage.getItem('yaksha_device_addr') || 'landslide.local';
-document.getElementById('deviceAddr').value = deviceAddr;
-function base() { return 'http://' + deviceAddr; }
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // ---------------- Device address (persisted so you don't retype it) ----------------
+    let deviceAddr = localStorage.getItem('yaksha_device_addr') || 'landslide.local';
+    document.getElementById('deviceAddr').value = deviceAddr;
+    function base() { return 'http://' + deviceAddr; }
 
-function saveDevice() {
-  const v = document.getElementById('deviceAddr').value.trim();
-  if (!v) return;
-  deviceAddr = v.replace(/^https?:\/\//, '').replace(/\/$/, '');
-  localStorage.setItem('yaksha_device_addr', deviceAddr);
-  toggleSettings();
-  refresh();
-}
-let settingsOpen = false;
-function toggleSettings() {
-  settingsOpen = !settingsOpen;
-  document.getElementById('settingsPanel').style.display = settingsOpen ? 'block' : 'none';
-}
-if (!localStorage.getItem('yaksha_device_addr')) { settingsOpen = true; document.getElementById('settingsPanel').style.display = 'block'; }
+    function saveDevice() {
+      const v = document.getElementById('deviceAddr').value.trim();
+      if (!v) return;
+      deviceAddr = v.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      localStorage.setItem('yaksha_device_addr', deviceAddr);
+      toggleSettings();
+      refresh();
+    }
+    let settingsOpen = false;
+    function toggleSettings() {
+      settingsOpen = !settingsOpen;
+      document.getElementById('settingsPanel').style.display = settingsOpen ? 'block' : 'none';
+    }
+    if (!localStorage.getItem('yaksha_device_addr')) { settingsOpen = true; document.getElementById('settingsPanel').style.display = 'block'; }
 
-// ---------------- Phone siren ----------------
-// You have no physical buzzer, so THIS is the siren - real audio playing from
-// the phone's speaker, driven by the receiver's live alert flags. Three
-// different siren characters, same priority the firmware would have used:
-//   landslide (confirmed)  -> loud continuous hi-lo two-tone wail
-//   box moved/tilt         -> fast rising/falling wail
-//   vibration              -> quicker double-chirp with a pause
-let audioCtx = null, oscillator = null, gainNode = null;
-let soundEnabled = localStorage.getItem('yaksha_sound_enabled') !== '0'; // ON by default
-let sirenTimer = null;
-let currentPattern = 'none';
-let acknowledgedPattern = 'none';
+    // ---------------- Phone siren ----------------
+    // You have no physical buzzer, so THIS is the siren - real audio playing from
+    // the phone's speaker, driven by the receiver's live alert flags. Three
+    // different siren characters, same priority the firmware would have used:
+    //   landslide (confirmed)  -> loud continuous hi-lo two-tone wail
+    //   box moved/tilt         -> fast rising/falling wail
+    //   vibration              -> quicker double-chirp with a pause
+    let audioCtx = null, oscillator = null, gainNode = null;
+    let soundEnabled = localStorage.getItem('yaksha_sound_enabled') !== '0'; // ON by default
+    let sirenTimer = null;
+    let currentPattern = 'none';
+    let acknowledgedPattern = 'none';
 
-function initAudio() {
-  if (audioCtx) return;
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  gainNode = audioCtx.createGain();
-  gainNode.gain.value = 0;
-  oscillator = audioCtx.createOscillator();
-  oscillator.type = 'sawtooth';   // harsher/more "siren" than a plain sine
-  oscillator.frequency.value = 800;
-  oscillator.connect(gainNode);
-  gainNode.connect(audioCtx.destination);
-  oscillator.start();
-}
-
-// Phones/browsers block audio until a real tap happens somewhere on the page.
-// Unlock on the FIRST tap/click anywhere - not just the siren button - so it's
-// armed as soon as you open the app and touch it at all.
-function unlockAudioOnce() {
-  if (!soundEnabled) return;
-  initAudio();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-}
-document.addEventListener('touchstart', unlockAudioOnce, { once: true, passive: true });
-document.addEventListener('click', unlockAudioOnce, { once: true });
-
-function updateSoundBtn() {
-  const b = document.getElementById('soundToggleBtn');
-  b.textContent = soundEnabled ? '\uD83D\uDD0A Phone Siren: ON (tap to mute)' : '\uD83D\uDD07 Phone Siren: OFF (tap to enable)';
-}
-
-function toggleSound() {
-  if (!soundEnabled) {
-    soundEnabled = true;
-    localStorage.setItem('yaksha_sound_enabled', '1');
-    initAudio();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-  } else {
-    soundEnabled = false;
-    localStorage.setItem('yaksha_sound_enabled', '0');
-    setPattern('none');
-  }
-  updateSoundBtn();
-}
-updateSoundBtn();
-if (soundEnabled) { initAudio(); } // context exists immediately; still needs one real tap/click to actually unmute on most phones
-
-// Smoothly glide the oscillator's pitch to a new frequency over `dur` seconds
-// - this is what makes it sound like a real siren instead of a video-game blip.
-function glideTo(freq, dur) {
-  const t = audioCtx.currentTime;
-  oscillator.frequency.cancelScheduledValues(t);
-  oscillator.frequency.setValueAtTime(oscillator.frequency.value, t);
-  oscillator.frequency.linearRampToValueAtTime(freq, t + dur);
-}
-
-function setPattern(pattern) {
-  if (pattern === currentPattern) return;
-  currentPattern = pattern;
-  if (sirenTimer) { clearInterval(sirenTimer); sirenTimer = null; }
-  if (!soundEnabled || !audioCtx || pattern === 'none') {
-    if (gainNode) gainNode.gain.setTargetAtTime(0, audioCtx ? audioCtx.currentTime : 0, 0.05);
-    return;
-  }
-
-  if (pattern === 'landslide') {
-    // Loud continuous hi-lo two-tone wail (classic ambulance-style siren)
-    gainNode.gain.setTargetAtTime(0.35, audioCtx.currentTime, 0.05);
-    let hi = true;
-    glideTo(hi ? 1300 : 750, 0.5);
-    sirenTimer = setInterval(() => {
-      hi = !hi;
-      glideTo(hi ? 1300 : 750, 0.5);
-    }, 550);
-
-  } else if (pattern === 'moved') {
-    // Fast rising/falling wail - urgent, but a notch below the landslide tone
-    gainNode.gain.setTargetAtTime(0.3, audioCtx.currentTime, 0.05);
-    let up = true;
-    glideTo(up ? 1450 : 550, 0.22);
-    sirenTimer = setInterval(() => {
-      up = !up;
-      glideTo(up ? 1450 : 550, 0.22);
-    }, 240);
-
-  } else if (pattern === 'vib') {
-    // Quicker double-chirp, then a pause - the least urgent of the three
-    oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime);
-    let step = 0;
-    sirenTimer = setInterval(() => {
-      const on = (step % 5) < 2; // chirp, chirp, pause, pause, pause
-      gainNode.gain.setTargetAtTime(on ? 0.3 : 0, audioCtx.currentTime, 0.01);
-      step++;
-    }, 160);
-  }
-}
-
-function acknowledgeAlert() {
-  acknowledgedPattern = currentPattern;
-  setPattern('none');
-  document.getElementById('ackBtn').style.display = 'none';
-}
-
-// Decides which phone-siren pattern should be playing based on the latest /data,
-// same priority the firmware itself uses for its own buzzer.
-function updateSirenFromData(d) {
-  let wanted = 'none';
-  if (d.landslideWarning) wanted = 'landslide';
-  else if (d.boxMovedAlert) wanted = 'moved';
-  else if (d.vibrationAlert) wanted = 'vib';
-
-  if (wanted === 'none') {
-    acknowledgedPattern = 'none';
-    document.getElementById('ackBtn').style.display = 'none';
-    setPattern('none');
-    return;
-  }
-
-  if (wanted !== acknowledgedPattern) {
-    setPattern(wanted);
-    document.getElementById('ackBtn').style.display = 'block';
-  } else {
-    setPattern('none'); // stays acknowledged/silenced until it clears or escalates
-  }
-
-  if (navigator.vibrate) {
-    if (wanted === 'landslide') navigator.vibrate([300, 100, 300, 100, 300]);
-    else if (wanted === 'moved') navigator.vibrate([200, 100, 200]);
-    else if (wanted === 'vib') navigator.vibrate([120, 80, 120]);
-  }
-}
-
-let adminOpen = false;
-function toggleAdmin() {
-  adminOpen = !adminOpen;
-  document.getElementById('adminPanel').style.display = adminOpen ? 'block' : 'none';
-  document.getElementById('adminToggleBtn').textContent = adminOpen ? 'Hide Admin View' : 'Admin View';
-}
-function resetWifi() {
-  if (!confirm('This will forget the saved WiFi and reboot into setup mode. Continue?')) return;
-  fetch(base() + '/resetwifi', { method: 'POST' }).then(() => {
-    alert('WiFi reset. The board is rebooting into setup mode (open network: Landslide-Setup).');
-  }).catch(() => alert('Could not reach the device. Check the address in settings.'));
-}
-
-function recalibrate() {
-  if (!confirm('This sets the CURRENT orientation as the new "level" baseline. Only do this if the box is sitting the way you want it. Continue?')) return;
-  fetch(base() + '/recalibrate', { method: 'POST' }).then(r => r.text()).then(msg => alert(msg))
-    .catch(() => alert('Could not reach the device.'));
-}
-
-function setGeofence() {
-  const val = document.getElementById('geofenceInput').value;
-  if (!val || isNaN(val)) { alert('Enter a radius in meters (1-500)'); return; }
-  fetch(base() + '/setgeofence', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'radius=' + encodeURIComponent(val)
-  }).then(r => r.text()).then(msg => alert(msg))
-    .catch(() => alert('Could not reach the device.'));
-}
-
-function downloadLog() {
-  window.location.href = base() + '/downloadlog';
-}
-
-let map = null, marker = null, mapReady = false;
-function ensureMap(lat, lng) {
-  if (mapReady) return;
-  map = L.map('map').setView([lat, lng], 17);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors',
-    maxZoom: 19
-  }).addTo(map);
-  marker = L.marker([lat, lng]).addTo(map);
-  mapReady = true;
-}
-
-function refresh() {
-  fetch(base() + '/data').then(r => r.json()).then(d => {
-    const banner = document.getElementById('linkBanner');
-    if (d.linkUp) {
-      banner.className = 'link-banner link-up';
-      banner.textContent = 'Connected \u2014 live data';
-    } else {
-      banner.className = 'link-banner link-down';
-      banner.textContent = 'Signal lost \u2014 last seen ' + d.secsSinceLast + 's ago';
+    function initAudio() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      gainNode = audioCtx.createGain();
+      gainNode.gain.value = 0;
+      oscillator = audioCtx.createOscillator();
+      oscillator.type = 'sawtooth';   // harsher/more "siren" than a plain sine
+      oscillator.frequency.value = 800;
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.start();
     }
 
-    document.getElementById('statusCard').style.background = d.riskColor;
-    document.getElementById('statusLevel').textContent = d.riskLevel;
-    document.getElementById('statusMessage').textContent = d.riskMessage;
+    // Phones/browsers block audio until a real tap happens somewhere on the page.
+    // Unlock on the FIRST tap/click anywhere - not just the siren button - so it's
+    // armed as soon as you open the app and touch it at all.
+    function unlockAudioOnce() {
+      if (!soundEnabled) return;
+      initAudio();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    document.addEventListener('touchstart', unlockAudioOnce, { once: true, passive: true });
+    document.addEventListener('click', unlockAudioOnce, { once: true });
 
-    document.getElementById('chipVib').classList.toggle('show', !!d.vibrationAlert);
-    document.getElementById('chipMoved').classList.toggle('show', !!d.boxMovedAlert);
-    document.getElementById('chipGps').classList.toggle('show', !!d.gpsDriftAlert);
-    document.getElementById('chipRain').classList.toggle('show', !!d.rainfallLikely);
-    document.getElementById('chipLandslide').classList.toggle('show', !!d.landslideWarning);
-    document.getElementById('chipSiren').classList.toggle('show', !!(d.vibrationAlert || d.boxMovedAlert || d.landslideWarning));
-
-    updateSirenFromData(d);
-
-    document.getElementById('tempValue').textContent = d.temperature.toFixed(1) + '\u00b0C';
-    document.getElementById('humValue').textContent = d.humidity.toFixed(0) + '%';
-    document.getElementById('soilValue').textContent = d.soilPercent + '%';
-
-    const pxPerDeg = 3.2;
-    const horizonGroup = document.getElementById('horizonGroup');
-    horizonGroup.setAttribute('transform',
-      'rotate(' + (-d.relRoll).toFixed(1) + ' 100 100) translate(0 ' + (d.relPitch * pxPerDeg).toFixed(1) + ')');
-    document.getElementById('a_relpitch').textContent = d.relPitch.toFixed(1) + '\u00b0';
-    document.getElementById('a_relroll').textContent = d.relRoll.toFixed(1) + '\u00b0';
-
-    document.getElementById('a_pitch').textContent = d.pitch.toFixed(1) + '\u00b0 / ' + d.roll.toFixed(1) + '\u00b0';
-    document.getElementById('a_baseline').textContent = d.baselinePitch.toFixed(1) + '\u00b0 / ' + d.baselineRoll.toFixed(1) + '\u00b0';
-    document.getElementById('a_movedalert').textContent = d.boxMovedAlert ? 'YES' : 'no';
-    document.getElementById('a_accel').textContent = d.accelX.toFixed(2)+' / '+d.accelY.toFixed(2)+' / '+d.accelZ.toFixed(2)+' g';
-    document.getElementById('a_gyro').textContent = d.gyroX.toFixed(1)+' / '+d.gyroY.toFixed(1)+' / '+d.gyroZ.toFixed(1)+' dps';
-
-    document.getElementById('a_vib').textContent = d.vib1;
-    document.getElementById('a_vibrate').textContent = d.vibRateScore.toFixed(0) + ' / 100';
-    document.getElementById('a_vibalert').textContent = d.vibrationAlert ? 'YES' : 'no';
-
-    document.getElementById('a_soil').textContent = d.soil1;
-    document.getElementById('a_soilpct').textContent = d.soilPercent + '%';
-    document.getElementById('a_rain').textContent = d.rainfallLikely ? 'YES' : 'no';
-
-    document.getElementById('a_fix').textContent = d.gpsFix ? 'YES' : 'NO';
-    document.getElementById('a_latlng').textContent = d.lat.toFixed(6) + ' / ' + d.lng.toFixed(6);
-    document.getElementById('a_sats').textContent = d.sats;
-    document.getElementById('a_home').textContent = d.homeSet ? 'YES' : 'Not yet (needs a GPS fix)';
-    document.getElementById('a_dist').textContent = d.homeSet ? d.distanceFromHome.toFixed(1) + ' m' : '--';
-    document.getElementById('a_geofence').textContent = d.geofenceRadius.toFixed(1) + ' m';
-    document.getElementById('a_gpsalert').textContent = d.gpsDriftAlert ? 'YES' : 'no';
-    document.getElementById('a_landslide').textContent = d.landslideWarning ? 'YES - GPS + MPU confirmed' : 'no';
-
-    document.getElementById('a_score').textContent = d.riskScore + ' / 100';
-    document.getElementById('a_count').textContent = d.packetCount;
-    document.getElementById('a_errs').textContent = d.checksumErrors;
-    document.getElementById('a_lastpkt').textContent = d.secsSinceLast + 's ago';
-    document.getElementById('a_wifi').textContent = d.wifiSSID + ' (' + d.wifiIP + ')';
-    document.getElementById('a_led').textContent = d.ledStatus;
-    document.getElementById('a_sdstatus').textContent = d.sdOk ? 'OK - logging' : 'Not detected';
-    document.getElementById('a_sdrows').textContent = d.logRows;
-
-    if (d.gpsFix && d.lat !== 0 && d.lng !== 0) {
-      document.getElementById('mapNote').style.display = 'none';
-      ensureMap(d.lat, d.lng);
-      if (mapReady) { marker.setLatLng([d.lat, d.lng]); map.panTo([d.lat, d.lng]); }
+    function updateSoundBtn() {
+      const b = document.getElementById('soundToggleBtn');
+      b.textContent = soundEnabled ? '\uD83D\uDD0A Phone Siren: ON (tap to mute)' : '\uD83D\uDD07 Phone Siren: OFF (tap to enable)';
     }
 
-    const logDiv = document.getElementById('eventLogList');
-    if (d.eventLog && d.eventLog.length > 0) {
-      logDiv.innerHTML = d.eventLog.slice().reverse().map(e =>
-        '<div class="event-row"><span>' + e.time + '</span><span>' + e.level + '</span></div>'
-      ).join('');
+    function toggleSound() {
+      if (!soundEnabled) {
+        soundEnabled = true;
+        localStorage.setItem('yaksha_sound_enabled', '1');
+        initAudio();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+      } else {
+        soundEnabled = false;
+        localStorage.setItem('yaksha_sound_enabled', '0');
+        setPattern('none');
+      }
+      updateSoundBtn();
     }
-  }).catch(() => {
-    document.getElementById('linkBanner').className = 'link-banner link-down';
-    document.getElementById('linkBanner').textContent = 'Cannot reach ' + deviceAddr + ' \u2014 check settings';
-  });
-}
+    updateSoundBtn();
+    if (soundEnabled) { initAudio(); } // context exists immediately; still needs one real tap/click to actually unmute on most phones
 
-setInterval(refresh, 1000);
-refresh();
+    // Smoothly glide the oscillator's pitch to a new frequency over `dur` seconds
+    // - this is what makes it sound like a real siren instead of a video-game blip.
+    function glideTo(freq, dur) {
+      const t = audioCtx.currentTime;
+      oscillator.frequency.cancelScheduledValues(t);
+      oscillator.frequency.setValueAtTime(oscillator.frequency.value, t);
+      oscillator.frequency.linearRampToValueAtTime(freq, t + dur);
+    }
 
-// ---------------- PWA install support ----------------
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js').catch(() => {});
-  });
-}
-</script>
+    function setPattern(pattern) {
+      if (pattern === currentPattern) return;
+      currentPattern = pattern;
+      if (sirenTimer) { clearInterval(sirenTimer); sirenTimer = null; }
+      if (!soundEnabled || !audioCtx || pattern === 'none') {
+        if (gainNode) gainNode.gain.setTargetAtTime(0, audioCtx ? audioCtx.currentTime : 0, 0.05);
+        return;
+      }
+
+      if (pattern === 'landslide') {
+        // Loud continuous hi-lo two-tone wail (classic ambulance-style siren)
+        gainNode.gain.setTargetAtTime(0.35, audioCtx.currentTime, 0.05);
+        let hi = true;
+        glideTo(hi ? 1300 : 750, 0.5);
+        sirenTimer = setInterval(() => {
+          hi = !hi;
+          glideTo(hi ? 1300 : 750, 0.5);
+        }, 550);
+
+      } else if (pattern === 'moved') {
+        // Fast rising/falling wail - urgent, but a notch below the landslide tone
+        gainNode.gain.setTargetAtTime(0.3, audioCtx.currentTime, 0.05);
+        let up = true;
+        glideTo(up ? 1450 : 550, 0.22);
+        sirenTimer = setInterval(() => {
+          up = !up;
+          glideTo(up ? 1450 : 550, 0.22);
+        }, 240);
+
+      } else if (pattern === 'vib') {
+        // Quicker double-chirp, then a pause - the least urgent of the three
+        oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime);
+        let step = 0;
+        sirenTimer = setInterval(() => {
+          const on = (step % 5) < 2; // chirp, chirp, pause, pause, pause
+          gainNode.gain.setTargetAtTime(on ? 0.3 : 0, audioCtx.currentTime, 0.01);
+          step++;
+        }, 160);
+      }
+    }
+
+    function acknowledgeAlert() {
+      acknowledgedPattern = currentPattern;
+      setPattern('none');
+      document.getElementById('ackBtn').style.display = 'none';
+    }
+
+    // Decides which phone-siren pattern should be playing based on the latest /data,
+    // same priority the firmware itself uses for its own buzzer.
+    function updateSirenFromData(d) {
+      let wanted = 'none';
+      if (d.landslideWarning) wanted = 'landslide';
+      else if (d.boxMovedAlert) wanted = 'moved';
+      else if (d.vibrationAlert) wanted = 'vib';
+
+      if (wanted === 'none') {
+        acknowledgedPattern = 'none';
+        document.getElementById('ackBtn').style.display = 'none';
+        setPattern('none');
+        return;
+      }
+
+      if (wanted !== acknowledgedPattern) {
+        setPattern(wanted);
+        document.getElementById('ackBtn').style.display = 'block';
+      } else {
+        setPattern('none'); // stays acknowledged/silenced until it clears or escalates
+      }
+
+      if (navigator.vibrate) {
+        if (wanted === 'landslide') navigator.vibrate([300, 100, 300, 100, 300]);
+        else if (wanted === 'moved') navigator.vibrate([200, 100, 200]);
+        else if (wanted === 'vib') navigator.vibrate([120, 80, 120]);
+      }
+    }
+
+    let adminOpen = false;
+    function toggleAdmin() {
+      adminOpen = !adminOpen;
+      document.getElementById('adminPanel').style.display = adminOpen ? 'block' : 'none';
+      document.getElementById('adminToggleBtn').textContent = adminOpen ? 'Hide Admin View' : 'Admin View';
+    }
+    function resetWifi() {
+      if (!confirm('This will forget the saved WiFi and reboot into setup mode. Continue?')) return;
+      fetch(base() + '/resetwifi', { method: 'POST' }).then(() => {
+        alert('WiFi reset. The board is rebooting into setup mode (open network: Landslide-Setup).');
+      }).catch(() => alert('Could not reach the device. Check the address in settings.'));
+    }
+
+    function recalibrate() {
+      if (!confirm('This sets the CURRENT orientation as the new "level" baseline. Only do this if the box is sitting the way you want it. Continue?')) return;
+      fetch(base() + '/recalibrate', { method: 'POST' }).then(r => r.text()).then(msg => alert(msg))
+        .catch(() => alert('Could not reach the device.'));
+    }
+
+    function setGeofence() {
+      const val = document.getElementById('geofenceInput').value;
+      if (!val || isNaN(val)) { alert('Enter a radius in meters (1-500)'); return; }
+      fetch(base() + '/setgeofence', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'radius=' + encodeURIComponent(val)
+      }).then(r => r.text()).then(msg => alert(msg))
+        .catch(() => alert('Could not reach the device.'));
+    }
+
+    function downloadLog() {
+      window.location.href = base() + '/downloadlog';
+    }
+
+    let map = null, marker = null, mapReady = false;
+    function ensureMap(lat, lng) {
+      if (mapReady) return;
+      map = L.map('map').setView([lat, lng], 17);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(map);
+      marker = L.marker([lat, lng]).addTo(map);
+      mapReady = true;
+    }
+
+    function refresh() {
+      fetch(base() + '/data').then(r => r.json()).then(d => {
+        const banner = document.getElementById('linkBanner');
+        if (d.linkUp) {
+          banner.className = 'link-banner link-up';
+          banner.textContent = 'Connected \u2014 live data';
+        } else {
+          banner.className = 'link-banner link-down';
+          banner.textContent = 'Signal lost \u2014 last seen ' + d.secsSinceLast + 's ago';
+        }
+
+        document.getElementById('statusCard').style.background = d.riskColor;
+        document.getElementById('statusLevel').textContent = d.riskLevel;
+        document.getElementById('statusMessage').textContent = d.riskMessage;
+
+        document.getElementById('chipVib').classList.toggle('show', !!d.vibrationAlert);
+        document.getElementById('chipMoved').classList.toggle('show', !!d.boxMovedAlert);
+        document.getElementById('chipGps').classList.toggle('show', !!d.gpsDriftAlert);
+        document.getElementById('chipRain').classList.toggle('show', !!d.rainfallLikely);
+        document.getElementById('chipLandslide').classList.toggle('show', !!d.landslideWarning);
+        document.getElementById('chipSiren').classList.toggle('show', !!(d.vibrationAlert || d.boxMovedAlert || d.landslideWarning));
+
+        updateSirenFromData(d);
+
+        document.getElementById('tempValue').textContent = d.temperature.toFixed(1) + '\u00b0C';
+        document.getElementById('humValue').textContent = d.humidity.toFixed(0) + '%';
+        document.getElementById('soilValue').textContent = d.soilPercent + '%';
+
+        const pxPerDeg = 3.2;
+        const horizonGroup = document.getElementById('horizonGroup');
+        horizonGroup.setAttribute('transform',
+          'rotate(' + (-d.relRoll).toFixed(1) + ' 100 100) translate(0 ' + (d.relPitch * pxPerDeg).toFixed(1) + ')');
+        document.getElementById('a_relpitch').textContent = d.relPitch.toFixed(1) + '\u00b0';
+        document.getElementById('a_relroll').textContent = d.relRoll.toFixed(1) + '\u00b0';
+
+        document.getElementById('a_pitch').textContent = d.pitch.toFixed(1) + '\u00b0 / ' + d.roll.toFixed(1) + '\u00b0';
+        document.getElementById('a_baseline').textContent = d.baselinePitch.toFixed(1) + '\u00b0 / ' + d.baselineRoll.toFixed(1) + '\u00b0';
+        document.getElementById('a_movedalert').textContent = d.boxMovedAlert ? 'YES' : 'no';
+        document.getElementById('a_accel').textContent = d.accelX.toFixed(2) + ' / ' + d.accelY.toFixed(2) + ' / ' + d.accelZ.toFixed(2) + ' g';
+        document.getElementById('a_gyro').textContent = d.gyroX.toFixed(1) + ' / ' + d.gyroY.toFixed(1) + ' / ' + d.gyroZ.toFixed(1) + ' dps';
+
+        document.getElementById('a_vib').textContent = d.vib1;
+        document.getElementById('a_vibrate').textContent = d.vibRateScore.toFixed(0) + ' / 100';
+        document.getElementById('a_vibalert').textContent = d.vibrationAlert ? 'YES' : 'no';
+
+        document.getElementById('a_soil').textContent = d.soil1;
+        document.getElementById('a_soilpct').textContent = d.soilPercent + '%';
+        document.getElementById('a_rain').textContent = d.rainfallLikely ? 'YES' : 'no';
+
+        document.getElementById('a_fix').textContent = d.gpsFix ? 'YES' : 'NO';
+        document.getElementById('a_latlng').textContent = d.lat.toFixed(6) + ' / ' + d.lng.toFixed(6);
+        document.getElementById('a_sats').textContent = d.sats;
+        document.getElementById('a_home').textContent = d.homeSet ? 'YES' : 'Not yet (needs a GPS fix)';
+        document.getElementById('a_dist').textContent = d.homeSet ? d.distanceFromHome.toFixed(1) + ' m' : '--';
+        document.getElementById('a_geofence').textContent = d.geofenceRadius.toFixed(1) + ' m';
+        document.getElementById('a_gpsalert').textContent = d.gpsDriftAlert ? 'YES' : 'no';
+        document.getElementById('a_landslide').textContent = d.landslideWarning ? 'YES - GPS + MPU confirmed' : 'no';
+
+        document.getElementById('a_score').textContent = d.riskScore + ' / 100';
+        document.getElementById('a_count').textContent = d.packetCount;
+        document.getElementById('a_errs').textContent = d.checksumErrors;
+        document.getElementById('a_lastpkt').textContent = d.secsSinceLast + 's ago';
+        document.getElementById('a_wifi').textContent = d.wifiSSID + ' (' + d.wifiIP + ')';
+        document.getElementById('a_led').textContent = d.ledStatus;
+        document.getElementById('a_sdstatus').textContent = d.sdOk ? 'OK - logging' : 'Not detected';
+        document.getElementById('a_sdrows').textContent = d.logRows;
+
+        if (d.gpsFix && d.lat !== 0 && d.lng !== 0) {
+          document.getElementById('mapNote').style.display = 'none';
+          ensureMap(d.lat, d.lng);
+          if (mapReady) { marker.setLatLng([d.lat, d.lng]); map.panTo([d.lat, d.lng]); }
+        }
+
+        const logDiv = document.getElementById('eventLogList');
+        if (d.eventLog && d.eventLog.length > 0) {
+          logDiv.innerHTML = d.eventLog.slice().reverse().map(e =>
+            '<div class="event-row"><span>' + e.time + '</span><span>' + e.level + '</span></div>'
+          ).join('');
+        }
+      }).catch(() => {
+        document.getElementById('linkBanner').className = 'link-banner link-down';
+        document.getElementById('linkBanner').textContent = 'Cannot reach ' + deviceAddr + ' \u2014 check settings';
+      });
+    }
+
+    setInterval(refresh, 1000);
+    refresh();
+
+    // ---------------- PWA install support ----------------
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js').catch(() => { });
+      });
+    }
+
+    // "Download"/Install link in the footer - mobile only (see CSS media query).
+    // PWAs don't have a store binary, so this triggers the browser's native
+    // "Add to Home Screen" / install prompt.
+    let deferredInstallPrompt = null;
+    const installLink = document.getElementById('installAppLink');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      installLink.classList.add('show'); // CSS media query still hides this on desktop regardless
+    });
+
+    installLink.addEventListener('click', async (e) => {
+      e.preventDefault();
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      installLink.classList.remove('show');
+    });
+
+    window.addEventListener('appinstalled', () => {
+      installLink.classList.remove('show');
+      deferredInstallPrompt = null;
+    });
+  </script>
 </body>
+
 </html>

@@ -1,9 +1,9 @@
 /* ============================================================
-   YAKSHA Landslide Monitor — "Survey Contour" Briefing Theme
-   Palette and motif drawn from topographic survey maps —
-   contour lines, elevation, terrain — since the whole system
-   watches ground movement. Light throughout; semantic alert
-   colors (red/amber/green) are untouched — only refined.
+  Landslide Monitor — "Survey Contour" Briefing Theme
+  Palette and motif drawn from topographic survey maps —
+  contour lines, elevation, terrain — since the whole system
+  watches ground movement. Light throughout; semantic alert
+  colors (red/amber/green) are untouched — only refined.
    ============================================================ */
 
 :root {
@@ -335,6 +335,27 @@ button:active { transform: translateY(1px); box-shadow: 0 1px 4px rgba(28, 74, 5
 }
 .footer::before {
   content: "⛰"; margin-right: 6px; opacity: 0.6;
+}
+.install-link {
+  display: none;
+  margin-top: 8px;
+  color: var(--accent-deep);
+  font-weight: 700;
+  font-size: 12px;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 6px 14px;
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+}
+.install-link:active { background: var(--accent-soft); }
+/* Mobile only - this is where "Add to Home Screen" actually matters */
+@media (max-width: 768px) {
+  .install-link.show { display: inline-block; }
+}
+@media (min-width: 769px) {
+  .install-link { display: none !important; }
 }
 
 /* ---- Event log ---- */
