@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Landslide">
+<title>YAKSHA Landslide Monitor</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  :root{
+    --bg:#0a0e0f; --panel:#12181a; --panel2:#0e1416;
+    --line:#233034; --green:#00ff9d; --amber:#ffb000; --red:#ff3b3b;
+    --blue:#3aa8ff; --dim:#5a6a6d; --text:#d7e6e4;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:'SF Mono','Courier New',monospace;
+    background:var(--bg); color:var(--text);
+    padding:14px 14px calc(30px + env(safe-area-inset-bottom));
+    max-width:640px; margin:0 auto;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1{font-size:15px; letter-spacing:2px; text-transform:uppercase; color:var(--green); text-align:center;}
+  .subtitle{text-align:center; color:var(--dim); font-size:10px; letter-spacing:1px; margin-bottom:14px; text-transform:uppercase;}
+
+  .panel{
+    position:relative; background:var(--panel); border:1px solid var(--line);
+    border-radius:4px; padding:16px; margin-bottom:12px;
+  }
+  .panel::before,.panel::after,.panel .cbl,.panel .cbr{content:'';position:absolute;width:10px;height:10px;border-color:var(--green);}
+  .corner-brackets::before{content:'';position:absolute;top:-1px;left:-1px;width:10px;height:10px;border-top:2px solid var(--green);border-left:2px solid var(--green);}
+  .corner-brackets::after{content:'';position:absolute;top:-1px;right:-1px;width:10px;height:10px;border-top:2px solid var(--green);border-right:2px solid var(--green);}
+  .corner-brackets .cbl{bottom:-1px;left:-1px;border-bottom:2px solid var(--green);border-left:2px solid var(--green);}
+  .corner-brackets .cbr{bottom:-1px;right:-1px;border-bottom:2px solid var(--green);border-right:2px solid var(--green);}
+
+  .link-banner{text-align:center;padding:7px;border-radius:4px;font-size:11px;margin-bottom:12px;font-weight:600;letter-spacing:1px;border:1px solid var(--line);text-transform:uppercase;}
+  .link-up{background:#062018;color:var(--green);border-color:#0a3a28;}
+  .link-down{background:#2a0d0d;color:var(--red);border-color:#4a1414;}
+
+  .status-card{border-radius:4px;padding:26px 18px;text-align:center;margin-bottom:12px;transition:background .5s,border-color .5s;border:1px solid var(--line);}
+  .status-level{font-size:34px;font-weight:800;letter-spacing:3px;}
+  .status-message{font-size:13px;margin-top:8px;opacity:.9;letter-spacing:.3px;}
+
+  .alert-strip{display:flex;flex-direction:column;gap:7px;margin-bottom:12px;}
+  .alert-chip{display:none;padding:11px 13px;border-radius:4px;font-size:12.5px;font-weight:600;align-items:center;gap:8px;border:1px solid;letter-spacing:.3px;}
+  .alert-chip.show{display:flex;}
+  @keyframes pulseAlert{0%{opacity:1;}50%{opacity:.5;}100%{opacity:1;}}
+  .chip-vib{background:#241a06;color:var(--amber);border-color:#4a3a10;animation:pulseAlert 1.3s infinite;}
+  .chip-full{background:#2a0d0d;color:var(--red);border-color:var(--red);animation:pulseAlert 1s infinite;}
+  .chip-landslide{background:var(--red);color:#1a0000;font-weight:800;border:2px solid #ffb3b3;animation:pulseAlert .6s infinite;}
+  .chip-gps{background:#241a06;color:var(--amber);border-color:#4a3a10;}
+  .chip-rain{background:#06202a;color:var(--blue);border-color:#0f3a4a;}
+  .chip-siren{background:#050708;color:var(--text);border-color:var(--line);animation:pulseAlert .8s infinite;}
+
+  .mini-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px;}
+  .mini-card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px 6px;text-align:center;}
+  .mini-value{font-size:22px;font-weight:700;color:var(--green);}
+  .mini-label{font-size:9.5px;color:var(--dim);margin-top:4px;text-transform:uppercase;letter-spacing:.5px;}
+
+  #map{width:100%;height:200px;border-radius:4px;margin-bottom:6px;border:1px solid var(--line);filter:invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);}
+  .map-note{text-align:center;font-size:11px;color:var(--dim);margin:0 0 12px;}
+
+  button{display:block;width:100%;padding:13px;border:1px solid var(--line);border-radius:4px;background:var(--panel2);color:var(--green);font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-bottom:12px;font-family:inherit;}
+  button:active{background:#000;}
+  #resetWifiBtn{color:var(--red);border-color:#4a1414;}
+  #recalBtn{color:var(--blue);border-color:#0f3a4a;}
+  #dlBtn{color:var(--blue);border-color:#0f3a4a;}
+
+  #adminPanel{display:none;}
+  .admin-table{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:12px;}
+  .admin-table td{padding:9px 12px;border-bottom:1px solid var(--line);font-size:12px;}
+  .admin-table td:first-child{color:var(--dim);}
+  .admin-table td:last-child{text-align:right;font-weight:600;color:var(--text);}
+  .admin-table tr:last-child td{border-bottom:none;}
+  .section-title{font-size:11px;font-weight:700;color:var(--amber);margin:14px 0 6px;text-transform:uppercase;letter-spacing:1px;}
+  .footer{text-align:center;font-size:10px;color:var(--dim);margin-top:6px;letter-spacing:.5px;}
+
+  #eventLogList{background:var(--panel);border:1px solid var(--line);border-radius:4px;margin-bottom:12px;overflow:hidden;}
+  .event-row{display:flex;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--line);font-size:11.5px;}
+  .event-row:last-child{border-bottom:none;}
+
+  .horizon-wrap{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px;margin-bottom:10px;}
+  #horizonSvg{border-radius:50%;flex-shrink:0;}
+  .horizon-labels{display:flex;flex-direction:column;gap:10px;text-align:center;flex:1;}
+
+  .gf-row{display:flex;gap:8px;margin-bottom:12px;}
+  .gf-row input{flex:1;padding:11px;border-radius:4px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:13px;font-family:inherit;}
+  .gf-row button{width:auto;flex:1;margin-bottom:0;}
+
+  .conn-row{display:flex;gap:8px;margin-bottom:6px;}
+  .conn-row input{flex:1;padding:11px;border-radius:4px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:13px;font-family:inherit;}
+  .conn-row button{width:auto;margin-bottom:0;padding:11px 16px;}
+  .conn-hint{font-size:10.5px;color:var(--dim);margin-bottom:12px;line-height:1.5;}
+  .gear{background:none;border:none;color:var(--dim);font-size:16px;position:absolute;top:12px;right:12px;cursor:pointer;width:auto;padding:4px;margin:0;}
+  #settingsPanel{display:none;}
+</style>
+</head>
+<body>
+
+  <div class="panel corner-brackets" style="position:relative;">
+    <button class="gear" onclick="toggleSettings()" title="Device settings">&#9881;</button>
+    <h1>YAKSHA // Landslide Monitor</h1>
+    <div class="subtitle">Team YAKSHA &middot; TEXMiN</div>
+
+    <div id="settingsPanel">
+      <div class="conn-row">
+        <input id="deviceAddr" type="text" placeholder="landslide.local or 192.168.x.x">
+        <button onclick="saveDevice()">Save</button>
+      </div>
+      <div class="conn-hint">
+        Enter the receiver's mDNS name (<b>landslide.local</b>) or its IP as shown on the OLED / dashboard admin panel.
+        Your phone/laptop must be on the same WiFi as the receiver. If the receiver is in its own AP mode
+        ("Landslide-Setup"), connect to that network directly and use <b>192.168.4.1</b>.
+      </div>
+    </div>
+  </div>
+
+  <div id="linkBanner" class="link-banner link-down">Connecting...</div>
+
+  <div id="statusCard" class="status-card" style="background:#141a1c;">
+    <div id="statusLevel" class="status-level">--</div>
+    <div id="statusMessage" class="status-message">Waiting for data...</div>
+  </div>
+
+  <div class="alert-strip">
+    <div id="chipLandslide" class="alert-chip chip-landslide">&#128680; LANDSLIDE WARNING &mdash; GPS shift confirmed by tilt/vibration. Evacuate the area.</div>
+    <div id="chipMoved" class="alert-chip chip-full">&#128207; FULL ALERT &mdash; the box has tilted/rolled from its mounted position.</div>
+    <div id="chipVib" class="alert-chip chip-vib">&#9888; Vibration detected underground &mdash; alerting for the next minute.</div>
+    <div id="chipGps" class="alert-chip chip-gps">&#128225; GPS position drifting beyond the geofence &mdash; watching closely.</div>
+    <div id="chipRain" class="alert-chip chip-rain">&#127783; Soil is getting wetter &mdash; rain may be softening the ground.</div>
+    <div id="chipSiren" class="alert-chip chip-siren">&#128266; Siren sounding</div>
+  </div>
+
+  <div class="mini-grid">
+    <div class="mini-card"><div id="tempValue" class="mini-value">--&deg;</div><div class="mini-label">Temperature</div></div>
+    <div class="mini-card"><div id="humValue" class="mini-value">--%</div><div class="mini-label">Humidity</div></div>
+    <div class="mini-card"><div id="soilValue" class="mini-value">--%</div><div class="mini-label">Soil Moisture</div></div>
+  </div>
+
+  <div id="map"></div>
+  <div class="map-note" id="mapNote">Waiting for GPS fix...</div>
+
+  <button onclick="toggleAdmin()">Admin View</button>
+
+  <div id="adminPanel">
+
+    <div class="section-title">Tilt / Orientation (relative to calibrated baseline)</div>
+    <div class="horizon-wrap">
+      <svg id="horizonSvg" viewBox="0 0 200 200" width="180" height="180">
+        <defs><clipPath id="horizonClip"><circle cx="100" cy="100" r="90"/></clipPath></defs>
+        <circle cx="100" cy="100" r="92" fill="#000" />
+        <g clip-path="url(#horizonClip)">
+          <g id="horizonGroup">
+            <rect x="-100" y="-300" width="400" height="300" fill="#0a3a55" />
+            <rect x="-100" y="0" width="400" height="300" fill="#3a2a12" />
+            <line x1="-100" y1="0" x2="300" y2="0" stroke="#00ff9d" stroke-width="2"/>
+          </g>
+        </g>
+        <circle cx="100" cy="100" r="90" fill="none" stroke="#233034" stroke-width="4" />
+        <line x1="60" y1="100" x2="85" y2="100" stroke="#ffb000" stroke-width="4" />
+        <line x1="115" y1="100" x2="140" y2="100" stroke="#ffb000" stroke-width="4" />
+        <polygon points="100,92 108,104 92,104" fill="#ffb000" />
+      </svg>
+      <div class="horizon-labels">
+        <div><span class="mini-label">Pitch</span><div id="a_relpitch" class="mini-value" style="font-size:18px;">--</div></div>
+        <div><span class="mini-label">Roll</span><div id="a_relroll" class="mini-value" style="font-size:18px;">--</div></div>
+      </div>
+    </div>
+    <button id="recalBtn" onclick="recalibrate()">Recalibrate (set current position as level)</button>
+    <table class="admin-table">
+      <tr><td>Raw Pitch / Roll</td><td id="a_pitch">--</td></tr>
+      <tr><td>Baseline Pitch / Roll</td><td id="a_baseline">--</td></tr>
+      <tr><td>Box Moved Alert</td><td id="a_movedalert">--</td></tr>
+      <tr><td>Accel X / Y / Z</td><td id="a_accel">--</td></tr>
+      <tr><td>Gyro X / Y / Z</td><td id="a_gyro">--</td></tr>
+    </table>
+
+    <div class="section-title">Vibration</div>
+    <table class="admin-table">
+      <tr><td>Sensor (now)</td><td id="a_vib">--</td></tr>
+      <tr><td>Vibration Rate Score</td><td id="a_vibrate">--</td></tr>
+      <tr><td>Vibration Alert</td><td id="a_vibalert">--</td></tr>
+    </table>
+
+    <div class="section-title">Ground</div>
+    <table class="admin-table">
+      <tr><td>Soil Moisture (raw ADC)</td><td id="a_soil">--</td></tr>
+      <tr><td>Soil Moisture (%)</td><td id="a_soilpct">--</td></tr>
+      <tr><td>Rainfall Likely</td><td id="a_rain">--</td></tr>
+    </table>
+
+    <div class="section-title">GPS / Ground Movement (Geofence)</div>
+    <table class="admin-table">
+      <tr><td>Fix</td><td id="a_fix">--</td></tr>
+      <tr><td>Lat / Lng</td><td id="a_latlng">--</td></tr>
+      <tr><td>Satellites</td><td id="a_sats">--</td></tr>
+      <tr><td>Home Locked</td><td id="a_home">--</td></tr>
+      <tr><td>Distance From Home</td><td id="a_dist">--</td></tr>
+      <tr><td>Geofence Radius</td><td id="a_geofence">--</td></tr>
+      <tr><td>GPS Drift Alert</td><td id="a_gpsalert">--</td></tr>
+      <tr><td>MPU Verified (Landslide)</td><td id="a_landslide">--</td></tr>
+    </table>
+    <div class="gf-row">
+      <input id="geofenceInput" type="number" min="1" max="500" step="0.5" placeholder="radius in meters">
+      <button onclick="setGeofence()">Set Geofence</button>
+    </div>
+
+    <div class="section-title">Risk / Prediction Engine</div>
+    <table class="admin-table">
+      <tr><td>Risk Score</td><td id="a_score">--</td></tr>
+      <tr><td>Packets Received</td><td id="a_count">--</td></tr>
+      <tr><td>Checksum Errors</td><td id="a_errs">--</td></tr>
+      <tr><td>Last Packet</td><td id="a_lastpkt">--</td></tr>
+      <tr><td>Network</td><td id="a_wifi">--</td></tr>
+      <tr><td>LED Strip</td><td id="a_led">--</td></tr>
+    </table>
+
+    <div class="section-title">SD Card Logger</div>
+    <table class="admin-table">
+      <tr><td>Card Status</td><td id="a_sdstatus">--</td></tr>
+      <tr><td>Rows Logged</td><td id="a_sdrows">--</td></tr>
+    </table>
+    <button id="dlBtn" onclick="downloadLog()">Download Log (CSV)</button>
+
+    <div class="section-title">Event Log</div>
+    <div id="eventLogList"><div class="event-row"><span>No events yet</span></div></div>
+
+    <button id="resetWifiBtn" onclick="resetWifi()">Reset WiFi (back to setup mode)</button>
+
+  </div>
+
+  <div class="footer">Landslide Early-Warning System &middot; PWA v1</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ---------------- Device address (persisted) ----------------
+let deviceAddr = localStorage.getItem('yaksha_device_addr') || 'landslide.local';
+document.getElementById('deviceAddr').value = deviceAddr;
+
+function base() { return 'http://' + deviceAddr; }
+
+function saveDevice() {
+  const v = document.getElementById('deviceAddr').value.trim();
+  if (!v) return;
+  deviceAddr = v.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  localStorage.setItem('yaksha_device_addr', deviceAddr);
+  toggleSettings();
+  refresh();
+}
+
+let settingsOpen = false;
+function toggleSettings() {
+  settingsOpen = !settingsOpen;
+  document.getElementById('settingsPanel').style.display = settingsOpen ? 'block' : 'none';
+}
+// Open settings automatically on first run so the user sets their device address
+if (!localStorage.getItem('yaksha_device_addr')) { settingsOpen = true; document.getElementById('settingsPanel').style.display = 'block'; }
+
+let adminOpen = false;
+function toggleAdmin() {
+  adminOpen = !adminOpen;
+  document.getElementById('adminPanel').style.display = adminOpen ? 'block' : 'none';
+  document.querySelectorAll('button')[1].textContent = adminOpen ? 'Hide Admin View' : 'Admin View';
+}
+
+function resetWifi() {
+  if (!confirm('This will forget the saved WiFi and reboot the receiver into setup mode. Continue?')) return;
+  fetch(base() + '/resetwifi', { method: 'POST' })
+    .then(() => alert('WiFi reset. The board is rebooting into setup mode (open network: Landslide-Setup).'))
+    .catch(() => alert('Could not reach the device. Check the address in settings and your WiFi connection.'));
+}
+
+function recalibrate() {
+  if (!confirm('This sets the CURRENT orientation as the new "level" baseline. Only do this if the box is sitting the way you want it. Continue?')) return;
+  fetch(base() + '/recalibrate', { method: 'POST' }).then(r => r.text()).then(msg => alert(msg))
+    .catch(() => alert('Could not reach the device.'));
+}
+
+function setGeofence() {
+  const val = document.getElementById('geofenceInput').value;
+  if (!val || isNaN(val)) { alert('Enter a radius in meters (1-500)'); return; }
+  fetch(base() + '/setgeofence', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'radius=' + encodeURIComponent(val)
+  }).then(r => r.text()).then(msg => alert(msg))
+    .catch(() => alert('Could not reach the device.'));
+}
+
+function downloadLog() {
+  window.location.href = base() + '/downloadlog';
+}
+
+let map = null, marker = null, mapReady = false;
+function ensureMap(lat, lng) {
+  if (mapReady) return;
+  map = L.map('map').setView([lat, lng], 17);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors', maxZoom: 19
+  }).addTo(map);
+  marker = L.marker([lat, lng]).addTo(map);
+  mapReady = true;
+}
+
+function refresh() {
+  fetch(base() + '/data').then(r => r.json()).then(d => {
+    const banner = document.getElementById('linkBanner');
+    if (d.linkUp) {
+      banner.className = 'link-banner link-up';
+      banner.textContent = 'Connected \u2014 live data';
+    } else {
+      banner.className = 'link-banner link-down';
+      banner.textContent = 'Signal lost \u2014 last seen ' + d.secsSinceLast + 's ago';
+    }
+
+    document.getElementById('statusCard').style.background = d.riskColor;
+    document.getElementById('statusLevel').textContent = d.riskLevel;
+    document.getElementById('statusMessage').textContent = d.riskMessage;
+
+    document.getElementById('chipVib').classList.toggle('show', !!d.vibrationAlert);
+    document.getElementById('chipMoved').classList.toggle('show', !!d.boxMovedAlert);
+    document.getElementById('chipGps').classList.toggle('show', !!d.gpsDriftAlert);
+    document.getElementById('chipRain').classList.toggle('show', !!d.rainfallLikely);
+    document.getElementById('chipLandslide').classList.toggle('show', !!d.landslideWarning);
+    document.getElementById('chipSiren').classList.toggle('show', !!(d.vibrationAlert || d.boxMovedAlert || d.landslideWarning));
+
+    document.getElementById('tempValue').textContent = d.temperature.toFixed(1) + '\u00b0C';
+    document.getElementById('humValue').textContent = d.humidity.toFixed(0) + '%';
+    document.getElementById('soilValue').textContent = d.soilPercent + '%';
+
+    const pxPerDeg = 3.2;
+    const horizonGroup = document.getElementById('horizonGroup');
+    horizonGroup.setAttribute('transform',
+      'rotate(' + (-d.relRoll).toFixed(1) + ' 100 100) translate(0 ' + (d.relPitch * pxPerDeg).toFixed(1) + ')');
+    document.getElementById('a_relpitch').textContent = d.relPitch.toFixed(1) + '\u00b0';
+    document.getElementById('a_relroll').textContent = d.relRoll.toFixed(1) + '\u00b0';
+
+    document.getElementById('a_pitch').textContent = d.pitch.toFixed(1) + '\u00b0 / ' + d.roll.toFixed(1) + '\u00b0';
+    document.getElementById('a_baseline').textContent = d.baselinePitch.toFixed(1) + '\u00b0 / ' + d.baselineRoll.toFixed(1) + '\u00b0';
+    document.getElementById('a_movedalert').textContent = d.boxMovedAlert ? 'YES' : 'no';
+    document.getElementById('a_accel').textContent = d.accelX.toFixed(2)+' / '+d.accelY.toFixed(2)+' / '+d.accelZ.toFixed(2)+' g';
+    document.getElementById('a_gyro').textContent = d.gyroX.toFixed(1)+' / '+d.gyroY.toFixed(1)+' / '+d.gyroZ.toFixed(1)+' dps';
+
+    document.getElementById('a_vib').textContent = d.vib1;
+    document.getElementById('a_vibrate').textContent = d.vibRateScore.toFixed(0) + ' / 100';
+    document.getElementById('a_vibalert').textContent = d.vibrationAlert ? 'YES' : 'no';
+
+    document.getElementById('a_soil').textContent = d.soil1;
+    document.getElementById('a_soilpct').textContent = d.soilPercent + '%';
+    document.getElementById('a_rain').textContent = d.rainfallLikely ? 'YES' : 'no';
+
+    document.getElementById('a_fix').textContent = d.gpsFix ? 'YES' : 'NO';
+    document.getElementById('a_latlng').textContent = d.lat.toFixed(6) + ' / ' + d.lng.toFixed(6);
+    document.getElementById('a_sats').textContent = d.sats;
+    document.getElementById('a_home').textContent = d.homeSet ? 'YES' : 'Not yet (needs a GPS fix)';
+    document.getElementById('a_dist').textContent = d.homeSet ? d.distanceFromHome.toFixed(1) + ' m' : '--';
+    document.getElementById('a_geofence').textContent = d.geofenceRadius.toFixed(1) + ' m';
+    document.getElementById('a_gpsalert').textContent = d.gpsDriftAlert ? 'YES' : 'no';
+    document.getElementById('a_landslide').textContent = d.landslideWarning ? 'YES - GPS + MPU confirmed' : 'no';
+
+    document.getElementById('a_score').textContent = d.riskScore + ' / 100';
+    document.getElementById('a_count').textContent = d.packetCount;
+    document.getElementById('a_errs').textContent = d.checksumErrors;
+    document.getElementById('a_lastpkt').textContent = d.secsSinceLast + 's ago';
+    document.getElementById('a_wifi').textContent = d.wifiSSID + ' (' + d.wifiIP + ')';
+    document.getElementById('a_led').textContent = d.ledStatus;
+    document.getElementById('a_sdstatus').textContent = d.sdOk ? 'OK - logging' : 'Not detected';
+    document.getElementById('a_sdrows').textContent = d.logRows;
+
+    if (d.gpsFix && d.lat !== 0 && d.lng !== 0) {
+      document.getElementById('mapNote').style.display = 'none';
+      ensureMap(d.lat, d.lng);
+      if (mapReady) { marker.setLatLng([d.lat, d.lng]); map.panTo([d.lat, d.lng]); }
+    }
+
+    const logDiv = document.getElementById('eventLogList');
+    if (d.eventLog && d.eventLog.length > 0) {
+      logDiv.innerHTML = d.eventLog.slice().reverse().map(e =>
+        '<div class="event-row"><span>' + e.time + '</span><span>' + e.level + '</span></div>'
+      ).join('');
+    }
+  }).catch(() => {
+    document.getElementById('linkBanner').className = 'link-banner link-down';
+    document.getElementById('linkBanner').textContent = 'Cannot reach ' + deviceAddr + ' \u2014 check settings / WiFi';
+  });
+}
+
+setInterval(refresh, 1000);
+refresh();
+
+// ---------------- PWA service worker ----------------
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
